@@ -1,17 +1,16 @@
-#include <GLFW/glfw3.h>
+#include "window.hpp"
+#include <stdexcept>
 
 int main() {
-    glfwInit();
-
-    constexpr char title[] = "graph-tools";
-    GLFWwindow* window = glfwCreateWindow(1280, 720, title, nullptr, nullptr);
-
-    while (!glfwWindowShouldClose(window)) {
-        glfwWaitEvents();
+    if (!glfwInit()) {
+        throw (std::runtime_error("Failed to initialize GLFW"));
     }
 
-    glfwDestroyWindow(window);
-    glfwTerminate();
+    std::string title = "GraphTools";
+    GraphTools::Window myWindow(1280, 720, title);
 
+    myWindow.Run();
+
+    glfwTerminate();
     return 0;
 }
