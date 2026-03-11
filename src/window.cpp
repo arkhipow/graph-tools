@@ -1,33 +1,32 @@
 #include "window.hpp"
-#include <stdexcept>
 
-GraphTools::Window::Window(int width, int height, const std::string& title) {
-    m_hWnd = glfwCreateWindow(width, height, title.c_str(), nullptr, nullptr);
-    if (!m_hWnd) { throw (std::runtime_error("Failed to create GLFW window")); }
+WindowUnit::WindowUnit(int width, int height, const std::string& title) {
 
-    glfwMakeContextCurrent(m_hWnd);
-    glfwSetFramebufferSizeCallback(m_hWnd, ResizeCallback);
-
-    glClearColor(windowColor.m_r, windowColor.m_g, windowColor.m_b, windowColor.m_a);
 }
 
-GraphTools::Window::~Window() {
-    glfwDestroyWindow(m_hWnd);
+std::shared_ptr<WindowManager> WindowManager::m_windowManager = nullptr;
+
+std::shared_ptr<WindowManager> WindowManager::CreateWindowManager() {
+    if (!m_windowManager) { m_windowManager = std::shared_ptr<WindowManager>(new WindowManager); }
+    return m_windowManager;
 }
 
-void GraphTools::Window::ClearFrame(HWINDOW hWnd) {
-    glClear(GL_COLOR_BUFFER_BIT);
-    glfwSwapBuffers(hWnd);
+void WindowManager::Push(std::unique_ptr<WindowUnit> windowUnit) {
+    m_windowUnits.push_back(std::move(windowUnit));
 }
 
-void GraphTools::Window::Run() {
-    while (!glfwWindowShouldClose(m_hWnd)) {
-        glfwPollEvents();
-        ClearFrame(m_hWnd);
+void WindowManager::Run() {
+    while (!m_windowUnits.empty()) {
+        for (auto& windowUnit : m_windowUnits) {
+            glfwPollEvents();
+        }
     }
 }
 
-void GraphTools::Window::ResizeCallback(HWINDOW hWnd, int width, int height) {
-    glViewport(0, 0, width, height);
-    ClearFrame(hWnd);
+WindowManager::WindowManager() {
+    if (!glfwInit()) {}
+}
+
+WindowManager::~WindowManager() {
+    glfwTerminate();
 }

@@ -1,21 +1,36 @@
 #pragma once
-#include "utils.hpp"
+#include <glfw/glfw3.h>
+#include <memory>
 #include <string>
+#include <vector>
 
-namespace GraphTools {
-    class Window final {
-    public:
-        Window(int width, int height, const std::string& title);
-        ~Window();
+class WindowUnit final {
+public:
+    WindowUnit(int width, int height, const std::string& title);
 
-        void Run();
+private:
 
-    private:
-        static void ClearFrame(HWINDOW hWnd);
+};
 
-        /* Callback methods */
-        static void ResizeCallback(HWINDOW hWnd, int width, int height);
+class WindowManager final {
+public:
+    static std::shared_ptr<WindowManager> CreateWindowManager();
 
-        HWINDOW m_hWnd;
-    };
-}
+    void Push(std::unique_ptr<WindowUnit> windowUnit);
+
+    void Run();
+
+    WindowManager(const WindowManager&) = delete;
+    WindowManager& operator=(const WindowManager&) = delete;
+
+    ~WindowManager();
+
+private:
+    WindowManager();
+
+    template <typename T>
+    using VectorUnique = std::vector<std::unique_ptr<T>>;
+
+    static std::shared_ptr<WindowManager> m_windowManager;
+    VectorUnique<WindowUnit> m_windowUnits;
+};

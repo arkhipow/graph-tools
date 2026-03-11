@@ -1,16 +1,16 @@
 #include "window.hpp"
-#include <stdexcept>
 
 int main() {
-    if (!glfwInit()) {
-        throw (std::runtime_error("Failed to initialize GLFW"));
-    }
+    std::unique_ptr<WindowUnit> unit_1 = std::make_unique<WindowUnit>(1280, 720, "Unit 1");
+    /* Setting up a unit_1 */
 
-    std::string title = "GraphTools";
-    GraphTools::Window myWindow(1280, 720, title);
+    std::unique_ptr<WindowUnit> unit_2 = std::make_unique<WindowUnit>(1280, 720, "Unit 2");
+    /* Setting up a unit_2 */
 
-    myWindow.Run();
+    auto manager = WindowManager::CreateWindowManager();
+    
+    manager->Push(std::move(unit_1));
+    manager->Push(std::move(unit_2));
 
-    glfwTerminate();
-    return 0;
+    manager->Run();
 }
