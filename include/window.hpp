@@ -7,9 +7,15 @@
 class WindowUnit final {
 public:
     WindowUnit(int width, int height, const std::string& title);
+    ~WindowUnit();
+
+    void Render();
+    void Show();
+
+    GLFWwindow* GetHandle() noexcept;
 
 private:
-
+    GLFWwindow* m_windowHandle;
 };
 
 class WindowManager final {
