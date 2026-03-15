@@ -18,8 +18,12 @@ add_subdirectory(${CMAKE_SOURCE_DIR}/external/glfw)
 
 find_package(OpenGL REQUIRED)
 
-set(IMGUI_DIR ${CMAKE_SOURCE_DIR}/external/imgui)
+set(GLAD_DIR ${CMAKE_SOURCE_DIR}/external/glad)
+add_library(glad STATIC ${GLAD_DIR}/src/glad.c)
 
+target_include_directories(glad PUBLIC ${GLAD_DIR}/include)
+
+set(IMGUI_DIR ${CMAKE_SOURCE_DIR}/external/imgui)
 add_library(imgui STATIC
     ${IMGUI_DIR}/imgui.cpp
     ${IMGUI_DIR}/imgui_draw.cpp
@@ -29,9 +33,12 @@ add_library(imgui STATIC
     ${IMGUI_DIR}/backends/imgui_impl_opengl3.cpp
 )
 
+target_compile_definitions(imgui PUBLIC IMGUI_IMPL_OPENGL_LOADER_GLAD)
+
 target_include_directories(imgui PUBLIC
     ${IMGUI_DIR}
     ${IMGUI_DIR}/backends
+    ${GLAD_DIR}/include
 )
 
 target_link_libraries(imgui PUBLIC glfw OpenGL::GL)
@@ -41,6 +48,9 @@ add_executable(graph_tools
     ${CMAKE_SOURCE_DIR}/src/window.cpp
 )
 
-target_link_libraries(graph_tools PRIVATE imgui)
+target_link_libraries(graph_tools PRIVATE imgui glad)
 
-target_include_directories(graph_tools PRIVATE ${CMAKE_SOURCE_DIR}/include)
+target_include_directories(graph_tools PRIVATE
+    ${CMAKE_SOURCE_DIR}/include
+    ${GLAD_DIR}/include
+)

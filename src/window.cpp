@@ -1,18 +1,45 @@
 #include "window.hpp"
 
-WindowUnit::WindowUnit(int width, int height, const std::string& title)
-: m_windowHandle(glfwCreateWindow(width, height, title.c_str(), nullptr, nullptr)), m_minWidth(GLFW_DONT_CARE), m_minHeight(GLFW_DONT_CARE) {
+WindowUnit::WindowUnit(int width, int height, const std::string& title) : m_minWidth(GLFW_DONT_CARE), m_minHeight(GLFW_DONT_CARE) {
+    glfwWindowHint(GLFW_DOUBLEBUFFER, GLFW_TRUE);
+    glfwWindowHint(GLFW_SCALE_TO_MONITOR, GLFW_TRUE);
+
+    m_windowHandle = glfwCreateWindow(width, height, title.c_str(), nullptr, nullptr);
     if (!m_windowHandle) {}
 
     glfwMakeContextCurrent(m_windowHandle);
+    // glfwSwapInterval(1);
 
-    glfwSwapInterval(1);
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {}
+
+    IMGUI_CHECKVERSION();
+    m_imguiHandle = ImGui::CreateContext();
+    ImGui::SetCurrentContext(m_imguiHandle);
+
+    ImGuiIO& io = ImGui::GetIO();
+
+    float scaleX, scaleY;
+    glfwGetWindowContentScale(m_windowHandle, &scaleX, &scaleY);
+
+    ImGui::GetStyle().ScaleAllSizes(scaleX);
+
+    ImFontConfig fontConfig;
+    fontConfig.SizePixels = 14.0f * scaleX;
+    io.Fonts->AddFontDefault(&fontConfig);
+
+    ImGui_ImplGlfw_InitForOpenGL(m_windowHandle, true);
+    ImGui_ImplOpenGL3_Init("#version 130");
 
     glfwSetWindowUserPointer(m_windowHandle, this);
     glfwSetWindowRefreshCallback(m_windowHandle, WindowRefreshCallback);
 }
 
 WindowUnit::~WindowUnit() {
+    ImGui::SetCurrentContext(m_imguiHandle);
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext(m_imguiHandle);
+
     glfwDestroyWindow(m_windowHandle);
 }
 
@@ -31,18 +58,29 @@ void WindowUnit::SetColor(float r, float g, float b, float a) {
 }
 
 void WindowUnit::Render() {
-    if (glfwGetCurrentContext() != m_windowHandle) {
-        glfwMakeContextCurrent(m_windowHandle);
-    }
+    glfwMakeContextCurrent(m_windowHandle);
+    ImGui::SetCurrentContext(m_imguiHandle);
 
     int width, height;
     glfwGetFramebufferSize(m_windowHandle, &width, &height);
 
-    glViewport(0, 0, width, height);
+    ImGuiIO& io = ImGui::GetIO();
+    io.DisplaySize = ImVec2(static_cast<float>(width), static_cast<float>(height));
 
-    /* Rendering */
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplGlfw_NewFrame();
+    ImGui::NewFrame();
+
+    ImGui::Begin("Settings");
+    ImGui::Text("Window ID: %p", m_windowHandle);
+    ImGui::End();
+
+    glViewport(0, 0, width, height);
     glClearColor(m_windowColor[0], m_windowColor[1], m_windowColor[2], m_windowColor[3]);
     glClear(GL_COLOR_BUFFER_BIT);
+
+    ImGui::Render();
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
     glfwSwapBuffers(m_windowHandle);
 }

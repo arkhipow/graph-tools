@@ -1,5 +1,12 @@
 #pragma once
+
+#include <glad/glad.h>
 #include <glfw/glfw3.h>
+
+#include <imgui.h>
+#include <imgui_impl_glfw.h>
+#include <imgui_impl_opengl3.h>
+
 #include <array>
 #include <memory>
 #include <string>
@@ -22,7 +29,8 @@ public:
 
 private:
     GLFWwindow* m_windowHandle;
-    
+    ImGuiContext* m_imguiHandle;
+
     int m_minWidth;
     int m_minHeight;
 
