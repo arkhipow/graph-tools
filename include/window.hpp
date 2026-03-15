@@ -1,5 +1,6 @@
 #pragma once
 #include <glfw/glfw3.h>
+#include <array>
 #include <memory>
 #include <string>
 #include <vector>
@@ -9,6 +10,11 @@ public:
     WindowUnit(int width, int height, const std::string& title);
     ~WindowUnit();
 
+    void SetMinWidth(int minWidth);
+    void SetMinHeight(int minHeight);
+
+    void SetColor(float r, float g, float b, float a);
+
     void Render();
     void Show();
 
@@ -16,7 +22,14 @@ public:
 
 private:
     GLFWwindow* m_windowHandle;
+    
+    int m_minWidth;
+    int m_minHeight;
+
+    std::array<float, 4> m_windowColor;
 };
+
+void WindowRefreshCallback(GLFWwindow* windowHandle);
 
 class WindowManager final {
 public:
