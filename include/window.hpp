@@ -22,6 +22,8 @@ public:
 
     void SetColor(float r, float g, float b, float a);
 
+    void PushPanelUnit();
+
     void Render();
     void Show();
 
@@ -43,7 +45,7 @@ class WindowManager final {
 public:
     static std::shared_ptr<WindowManager> CreateWindowManager();
 
-    void Push(std::unique_ptr<WindowUnit> windowUnit);
+    void PushWindowUnit(std::unique_ptr<WindowUnit> windowUnit);
 
     void Run();
 

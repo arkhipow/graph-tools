@@ -57,6 +57,10 @@ void WindowUnit::SetColor(float r, float g, float b, float a) {
     m_windowColor = { r, g, b, a };
 }
 
+void WindowUnit::PushPanelUnit() {
+
+}
+
 void WindowUnit::Render() {
     int width, height;
     glfwGetFramebufferSize(m_windowHandle, &width, &height);
@@ -116,7 +120,7 @@ std::shared_ptr<WindowManager> WindowManager::CreateWindowManager() {
     return m_windowManager;
 }
 
-void WindowManager::Push(std::unique_ptr<WindowUnit> windowUnit) {
+void WindowManager::PushWindowUnit(std::unique_ptr<WindowUnit> windowUnit) {
     windowUnit->Show();
 
     m_windowUnits.push_back(std::move(windowUnit));
