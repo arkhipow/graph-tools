@@ -10,7 +10,7 @@ WindowUnit::WindowUnit(int width, int height, const std::string& title) : m_minW
     glfwMakeContextCurrent(m_windowHandle);
     // glfwSwapInterval(1);
 
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {}
+    if (!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress))) {}
 
     IMGUI_CHECKVERSION();
     m_imguiHandle = ImGui::CreateContext();
@@ -58,14 +58,11 @@ void WindowUnit::SetColor(float r, float g, float b, float a) {
 }
 
 void WindowUnit::Render() {
-    glfwMakeContextCurrent(m_windowHandle);
-    ImGui::SetCurrentContext(m_imguiHandle);
-
     int width, height;
     glfwGetFramebufferSize(m_windowHandle, &width, &height);
 
-    ImGuiIO& io = ImGui::GetIO();
-    io.DisplaySize = ImVec2(static_cast<float>(width), static_cast<float>(height));
+    glfwMakeContextCurrent(m_windowHandle);
+    ImGui::SetCurrentContext(m_imguiHandle);
 
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
