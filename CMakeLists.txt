@@ -45,8 +45,8 @@ target_link_libraries(imgui PUBLIC glfw OpenGL::GL)
 
 add_executable(graph_tools
     ${CMAKE_SOURCE_DIR}/src/main.cpp
-    ${CMAKE_SOURCE_DIR}/src/window.cpp
     ${CMAKE_SOURCE_DIR}/src/panel.cpp
+    ${CMAKE_SOURCE_DIR}/src/window.cpp
 )
 
 target_link_libraries(graph_tools PRIVATE imgui glad)

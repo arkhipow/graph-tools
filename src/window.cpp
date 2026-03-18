@@ -21,6 +21,8 @@ WindowUnit::WindowUnit(int width, int height, const std::string& title) : m_minW
     float scaleX, scaleY;
     glfwGetWindowContentScale(m_windowHandle, &scaleX, &scaleY);
 
+    ImGui::GetIO().FontGlobalScale = scaleX;
+
     ImGui::GetStyle().ScaleAllSizes(scaleX);
 
     ImFontConfig fontConfig;
@@ -57,8 +59,8 @@ void WindowUnit::SetColor(float r, float g, float b, float a) {
     m_windowColor = { r, g, b, a };
 }
 
-void WindowUnit::PushPanelUnit() {
-
+void WindowUnit::PushPanelUnit(std::unique_ptr<PanelUnit> panelUnit) {
+    m_panelUnits.push_back(std::move(panelUnit));
 }
 
 void WindowUnit::Render() {
@@ -77,17 +79,12 @@ void WindowUnit::Render() {
 
     ImGuiWindowFlags flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
 
-    static float offset = 0;
-    static float values[100];
-    for (int i = 0; i < 100; ++i) {
-        values[i] = sinf(offset + i * 0.2f);
-    }
-    offset += 0.001f;
-
     ImGui::Begin("Settings", nullptr, flags);
-    ImGui::Text("Window ID: %p", m_windowHandle);
-    ImGui::Button("Button", ImVec2(ImGui::GetContentRegionAvail().x, 100));
-    ImGui::PlotLines("##Sine Wave", values, IM_ARRAYSIZE(values), 0, "Visual Oscillator", -1.0f, 1.0f, ImVec2(-FLT_MIN, 200.0f));
+
+    for (auto& panelUnit : m_panelUnits) {
+        panelUnit->Render();
+    }
+
     ImGui::End();
 
     glViewport(0, 0, width, height);

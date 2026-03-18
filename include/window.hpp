@@ -3,14 +3,14 @@
 #include <glad/glad.h>
 #include <glfw/glfw3.h>
 
-#include <imgui.h>
-#include <imgui_impl_glfw.h>
-#include <imgui_impl_opengl3.h>
+#include "panel.hpp"
 
 #include <array>
 #include <memory>
-#include <string>
 #include <vector>
+
+template <typename T>
+using VectorUnique = std::vector<std::unique_ptr<T>>;
 
 class WindowUnit final {
 public:
@@ -22,7 +22,7 @@ public:
 
     void SetColor(float r, float g, float b, float a);
 
-    void PushPanelUnit();
+    void PushPanelUnit(std::unique_ptr<PanelUnit> panelUnit);
 
     void Render();
     void Show();
@@ -37,6 +37,8 @@ private:
     int m_minHeight;
 
     std::array<float, 4> m_windowColor;
+
+    VectorUnique<PanelUnit> m_panelUnits;
 };
 
 void WindowRefreshCallback(GLFWwindow* windowHandle);
@@ -56,9 +58,6 @@ public:
 
 private:
     WindowManager();
-
-    template <typename T>
-    using VectorUnique = std::vector<std::unique_ptr<T>>;
 
     static std::shared_ptr<WindowManager> m_windowManager;
     VectorUnique<WindowUnit> m_windowUnits;
