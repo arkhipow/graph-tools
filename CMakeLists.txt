@@ -9,21 +9,33 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
-set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
-set(GLFW_BUILD_TESTS    OFF CACHE BOOL "" FORCE)
-set(GLFW_BUILD_DOCS     OFF CACHE BOOL "" FORCE)
-set(GLFW_INSTALL        OFF CACHE BOOL "" FORCE)
-
-add_subdirectory(${CMAKE_SOURCE_DIR}/external/glfw)
-
+# OpenGL
 find_package(OpenGL REQUIRED)
 
-set(GLAD_DIR ${CMAKE_SOURCE_DIR}/external/glad)
-add_library(glad STATIC ${GLAD_DIR}/src/glad.c)
+# GLAD
+set(GLAD_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external/glad)
 
-target_include_directories(glad PUBLIC ${GLAD_DIR}/include)
+add_library(glad STATIC
+    ${GLAD_DIR}/src/glad.c
+)
 
-set(IMGUI_DIR ${CMAKE_SOURCE_DIR}/external/imgui)
+target_include_directories(glad PUBLIC
+    ${GLAD_DIR}/include
+)
+
+# GLFW
+set(GLFW_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external/glfw)
+
+set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "Build the GLFW example programs" FORCE)
+set(GLFW_BUILD_TESTS    OFF CACHE BOOL "Build the GLFW test programs"    FORCE)
+set(GLFW_BUILD_DOCS     OFF CACHE BOOL "Build the GLFW documentation"    FORCE)
+set(GLFW_INSTALL        OFF CACHE BOOL "Generate installation target"    FORCE)
+
+add_subdirectory(${GLFW_DIR})
+
+# ImGUI
+set(IMGUI_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external/imgui)
+
 add_library(imgui STATIC
     ${IMGUI_DIR}/imgui.cpp
     ${IMGUI_DIR}/imgui_draw.cpp
@@ -33,25 +45,28 @@ add_library(imgui STATIC
     ${IMGUI_DIR}/backends/imgui_impl_opengl3.cpp
 )
 
-target_compile_definitions(imgui PUBLIC IMGUI_IMPL_OPENGL_LOADER_GLAD)
-
 target_include_directories(imgui PUBLIC
     ${IMGUI_DIR}
     ${IMGUI_DIR}/backends
-    ${GLAD_DIR}/include
+    ${GLFW_DIR}/include
 )
 
-target_link_libraries(imgui PUBLIC glfw OpenGL::GL)
+# GraphTools
+set(GRAPH_TOOLS_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
 add_executable(graph_tools
-    ${CMAKE_SOURCE_DIR}/src/main.cpp
-    ${CMAKE_SOURCE_DIR}/src/panel.cpp
-    ${CMAKE_SOURCE_DIR}/src/window.cpp
+    ${GRAPH_TOOLS_DIR}/src/panel.cpp
+    ${GRAPH_TOOLS_DIR}/src/window.cpp
+    ${GRAPH_TOOLS_DIR}/src/main.cpp
 )
 
-target_link_libraries(graph_tools PRIVATE imgui glad)
-
 target_include_directories(graph_tools PRIVATE
-    ${CMAKE_SOURCE_DIR}/include
-    ${GLAD_DIR}/include
+    ${GRAPH_TOOLS_DIR}/include
+)
+
+target_link_libraries(graph_tools PRIVATE
+    ${OPENGL_LIBRARIES}
+    glad
+    glfw
+    imgui
 )

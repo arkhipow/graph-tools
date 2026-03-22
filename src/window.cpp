@@ -1,150 +1,152 @@
 #include "window.hpp"
 
-WindowUnit::WindowUnit(int width, int height, const std::string& title) : m_minWidth(GLFW_DONT_CARE), m_minHeight(GLFW_DONT_CARE) {
-    glfwWindowHint(GLFW_DOUBLEBUFFER, GLFW_TRUE);
-    glfwWindowHint(GLFW_SCALE_TO_MONITOR, GLFW_TRUE);
+#include <stdexcept>
 
-    m_windowHandle = glfwCreateWindow(width, height, title.c_str(), nullptr, nullptr);
-    if (!m_windowHandle) {}
+WindowUnit::WindowUnit(GLFWwindow* handle) : m_handle(handle) {
+    m_context = ImGui::CreateContext();
+}
 
-    glfwMakeContextCurrent(m_windowHandle);
-    glfwSwapInterval(0);
+std::unique_ptr<WindowUnit> WindowUnit::Create(int width, int height, const std::string& title) {
+    GLFWwindow* handle = glfwCreateWindow(width, height, title.c_str(), nullptr, nullptr);
+    if (!handle) {
+        throw (std::runtime_error("Failed to create GLFW window"));
+    }
 
-    if (!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress))) {}
+    static bool isLoaded = false;
+    if (!isLoaded) {
+        glfwMakeContextCurrent(handle);
 
-    IMGUI_CHECKVERSION();
-    m_imguiHandle = ImGui::CreateContext();
-    ImGui::SetCurrentContext(m_imguiHandle);
+        if (!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress))) {
+            throw (std::runtime_error("Failed to load OpenGL functions"));
+        }
+        isLoaded = true;
+    }
 
-    ImGuiIO& io = ImGui::GetIO();
+    auto unit = std::unique_ptr<WindowUnit>(new WindowUnit(handle));
 
-    float scaleX, scaleY;
-    glfwGetWindowContentScale(m_windowHandle, &scaleX, &scaleY);
+    ImGui::SetCurrentContext(unit->GetContext());
 
-    ImGui::GetIO().FontGlobalScale = scaleX;
+    unit->SetScale();
 
-    ImGui::GetStyle().ScaleAllSizes(scaleX);
-
-    ImFontConfig fontConfig;
-    fontConfig.SizePixels = 14.0f * scaleX;
-    io.Fonts->AddFontDefault(&fontConfig);
-
-    ImGui_ImplGlfw_InitForOpenGL(m_windowHandle, true);
+    ImGui_ImplGlfw_InitForOpenGL(handle, true);
     ImGui_ImplOpenGL3_Init("#version 130");
 
-    glfwSetWindowUserPointer(m_windowHandle, this);
-    glfwSetWindowRefreshCallback(m_windowHandle, WindowRefreshCallback);
+    return unit;
 }
 
 WindowUnit::~WindowUnit() {
-    ImGui::SetCurrentContext(m_imguiHandle);
+    glfwMakeContextCurrent(m_handle);
+    ImGui::SetCurrentContext(m_context);
+
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
-    ImGui::DestroyContext(m_imguiHandle);
 
-    glfwDestroyWindow(m_windowHandle);
-}
-
-void WindowUnit::SetMinWidth(int minWidth) {
-    m_minWidth = minWidth;
-    glfwSetWindowSizeLimits(m_windowHandle, minWidth, m_minHeight, GLFW_DONT_CARE, GLFW_DONT_CARE);
-}
-
-void WindowUnit::SetMinHeight(int minHeight) {
-    m_minHeight = minHeight;
-    glfwSetWindowSizeLimits(m_windowHandle, m_minWidth, minHeight, GLFW_DONT_CARE, GLFW_DONT_CARE);
-}
-
-void WindowUnit::SetColor(float r, float g, float b, float a) {
-    m_windowColor = { r, g, b, a };
-}
-
-void WindowUnit::PushPanelUnit(std::unique_ptr<PanelUnit> panelUnit) {
-    m_panelUnits.push_back(std::move(panelUnit));
+    ImGui::DestroyContext(m_context);
+    glfwDestroyWindow(m_handle);
 }
 
 void WindowUnit::Render() {
-    int width, height;
-    glfwGetFramebufferSize(m_windowHandle, &width, &height);
+    NewFrame();
 
-    glfwMakeContextCurrent(m_windowHandle);
-    ImGui::SetCurrentContext(m_imguiHandle);
-
-    ImGui_ImplOpenGL3_NewFrame();
-    ImGui_ImplGlfw_NewFrame();
-    ImGui::NewFrame();
-
-    ImGui::SetNextWindowPos(ImVec2(0, 0));
-    ImGui::SetNextWindowSize(ImVec2(static_cast<float>(width), static_cast<float>(height)));
-
-    ImGuiWindowFlags flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
-
-    ImGui::Begin("Settings", nullptr, flags);
-
-    for (auto& panelUnit : m_panelUnits) {
-        panelUnit->Render();
-    }
-
+    ImGui::Begin("Render");
     ImGui::End();
 
-    glViewport(0, 0, width, height);
-    glClearColor(m_windowColor[0], m_windowColor[1], m_windowColor[2], m_windowColor[3]);
+    EndFrame();
+}
+
+void WindowUnit::NewFrame() {
+    ImGui_ImplGlfw_NewFrame();
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui::NewFrame();
+}
+
+void WindowUnit::EndFrame() {
+    ImGui::Render();
+
+    int w, h;
+    glfwGetFramebufferSize(m_handle, &w, &h);
+    glViewport(0, 0, w, h);
+
+    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
-    ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
-    glfwSwapBuffers(m_windowHandle);
+    glfwSwapBuffers(m_handle);
 }
 
-void WindowUnit::Show() {
-    glfwShowWindow(m_windowHandle);
+void WindowUnit::SetScale() {
+    float scale;
+    glfwGetWindowContentScale(m_handle, &scale, nullptr);
+
+    ImGuiIO& io = ImGui::GetIO();
+
+    io.IniFilename = nullptr;
+
+    ImGui::GetStyle().ScaleAllSizes(scale);
+
+    io.Fonts->Clear();
+    ImFontConfig cfg;
+    cfg.SizePixels = 13.0f * scale;
+    io.Fonts->AddFontDefault(&cfg);
 }
 
-GLFWwindow* WindowUnit::GetHandle() noexcept {
-    return m_windowHandle;
-}
-
-void WindowRefreshCallback(GLFWwindow* windowHandle) {
-    WindowUnit* windowUnit = static_cast<WindowUnit*>(glfwGetWindowUserPointer(windowHandle));
-    windowUnit->Render();
-}
-
-std::shared_ptr<WindowManager> WindowManager::m_windowManager = nullptr;
-
-std::shared_ptr<WindowManager> WindowManager::CreateWindowManager() {
-    if (!m_windowManager) { m_windowManager = std::shared_ptr<WindowManager>(new WindowManager); }
-    return m_windowManager;
-}
-
-void WindowManager::PushWindowUnit(std::unique_ptr<WindowUnit> windowUnit) {
-    windowUnit->Show();
-
-    m_windowUnits.push_back(std::move(windowUnit));
-}
-
-void WindowManager::Run() {
-    while (!m_windowUnits.empty()) {
-        glfwPollEvents();
-
-        for (auto pWindowUnit = m_windowUnits.begin(); pWindowUnit != m_windowUnits.end(); ) {
-            GLFWwindow* windowHandle = (*pWindowUnit)->GetHandle();
-
-            if (glfwWindowShouldClose(windowHandle)) {
-                pWindowUnit = m_windowUnits.erase(pWindowUnit);
-                continue;
-            }
-
-            (*pWindowUnit)->Render();
-            ++pWindowUnit;
-        }
-    }
-}
+bool WindowManager::m_isCreated = false;
 
 WindowManager::WindowManager() {
-    if (!glfwInit()) {}
+    if (!glfwInit()) {
+        throw (std::runtime_error("Failed to initialize GLFW"));
+    }
+
+    IMGUI_CHECKVERSION();
+}
+
+std::unique_ptr<WindowManager> WindowManager::Create() {
+    if (m_isCreated) {
+        throw (std::runtime_error("Failed to create window manager"));
+    }
+
+    m_isCreated = true;
+    return std::unique_ptr<WindowManager>(new WindowManager);
 }
 
 WindowManager::~WindowManager() {
+    m_units.clear();
+
     glfwTerminate();
+    m_isCreated = false;
+}
+
+void WindowManager::Push(std::unique_ptr<WindowUnit> unit) {
+    m_units.push_back(std::move(unit));
+}
+
+void WindowManager::Run() {
+    while (!m_units.empty()) {
+        glfwPollEvents();
+
+        for (auto& unit : m_units) {
+            if (glfwWindowShouldClose(unit->GetHandle())) {
+                continue;
+            }
+
+            UpdateContext(unit.get());
+            unit->Render();
+        }
+
+        m_units.erase(
+            std::remove_if(m_units.begin(), m_units.end(),
+                [](auto& u) { return glfwWindowShouldClose(u->GetHandle()); }),
+            m_units.end()
+        );
+    }
+}
+
+void WindowManager::UpdateContext(WindowUnit* unit) {
+    if (glfwGetCurrentContext() != unit->GetHandle()) {
+        glfwMakeContextCurrent(unit->GetHandle());
+    }
+
+    if (ImGui::GetCurrentContext() != unit->GetContext()) {
+        ImGui::SetCurrentContext(unit->GetContext());
+    }
 }

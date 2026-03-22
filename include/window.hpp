@@ -1,12 +1,15 @@
 #pragma once
 
 #include <glad/glad.h>
-#include <glfw/glfw3.h>
 
-#include "panel.hpp"
+#include <GLFW/glfw3.h>
 
-#include <array>
+#include <imgui.h>
+#include <imgui_impl_glfw.h>
+#include <imgui_impl_opengl3.h>
+
 #include <memory>
+#include <string>
 #include <vector>
 
 template <typename T>
@@ -14,51 +17,45 @@ using VectorUnique = std::vector<std::unique_ptr<T>>;
 
 class WindowUnit final {
 public:
-    WindowUnit(int width, int height, const std::string& title);
+    [[nodiscard]] static std::unique_ptr<WindowUnit> Create(int width, int height, const std::string& title);
     ~WindowUnit();
 
-    void SetMinWidth(int minWidth);
-    void SetMinHeight(int minHeight);
-
-    void SetColor(float r, float g, float b, float a);
-
-    void PushPanelUnit(std::unique_ptr<PanelUnit> panelUnit);
-
     void Render();
-    void Show();
 
-    GLFWwindow* GetHandle() noexcept;
+    GLFWwindow* GetHandle() const noexcept { return m_handle; }
+    ImGuiContext* GetContext() const noexcept { return m_context; }
+
+    WindowUnit(const WindowUnit&) = delete;
+    WindowUnit& operator=(const WindowUnit&) = delete;
 
 private:
-    GLFWwindow* m_windowHandle;
-    ImGuiContext* m_imguiHandle;
+    WindowUnit(GLFWwindow* handle);
 
-    int m_minWidth;
-    int m_minHeight;
+    void NewFrame();
+    void EndFrame();
 
-    std::array<float, 4> m_windowColor;
+    void SetScale();
 
-    VectorUnique<PanelUnit> m_panelUnits;
+    GLFWwindow* m_handle;
+    ImGuiContext* m_context;
 };
-
-void WindowRefreshCallback(GLFWwindow* windowHandle);
 
 class WindowManager final {
 public:
-    static std::shared_ptr<WindowManager> CreateWindowManager();
+    [[nodiscard]] static std::unique_ptr<WindowManager> Create();
+    ~WindowManager();
 
-    void PushWindowUnit(std::unique_ptr<WindowUnit> windowUnit);
-
+    void Push(std::unique_ptr<WindowUnit> unit);
     void Run();
 
     WindowManager(const WindowManager&) = delete;
     WindowManager& operator=(const WindowManager&) = delete;
 
-    ~WindowManager();
-
 private:
     WindowManager();
 
-    static std::shared_ptr<WindowManager> m_windowManager;
-    VectorUnique<WindowUnit> m_windowUnits;
+    static void UpdateContext(WindowUnit* unit);
+
+    static bool m_isCreated;
+    VectorUnique<WindowUnit> m_units;
 };
