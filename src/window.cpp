@@ -45,11 +45,33 @@ WindowUnit::~WindowUnit() {
     glfwDestroyWindow(m_handle);
 }
 
+void WindowUnit::Push(std::unique_ptr<PanelUnit> unit) {
+    m_units.push_back(std::move(unit));
+}
+
 void WindowUnit::Render() {
     NewFrame();
 
-    ImGui::Begin("Render");
+    ImGuiViewport* viewport = ImGui::GetMainViewport();
+    ImGui::SetNextWindowPos(viewport->WorkPos);
+    ImGui::SetNextWindowSize(viewport->WorkSize);
+
+    ImGuiWindowFlags flags = 0;
+    flags |= ImGuiWindowFlags_NoTitleBar;
+    flags |= ImGuiWindowFlags_NoResize;
+    flags |= ImGuiWindowFlags_NoMove;
+
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+
+    ImGui::Begin("GraphTools", nullptr, flags);
+
+    for (auto& it : m_units) {
+        it->Render();
+    }
+
     ImGui::End();
+
+    ImGui::PopStyleVar();
 
     EndFrame();
 }

@@ -1,16 +1,9 @@
 #pragma once
 
 #include <glad/glad.h>
-
 #include <GLFW/glfw3.h>
 
-#include <imgui.h>
-#include <imgui_impl_glfw.h>
-#include <imgui_impl_opengl3.h>
-
-#include <memory>
-#include <string>
-#include <vector>
+#include "panel.hpp"
 
 template <typename T>
 using VectorUnique = std::vector<std::unique_ptr<T>>;
@@ -20,6 +13,7 @@ public:
     [[nodiscard]] static std::unique_ptr<WindowUnit> Create(int width, int height, const std::string& title);
     ~WindowUnit();
 
+    void Push(std::unique_ptr<PanelUnit> unit);
     void Render();
 
     GLFWwindow* GetHandle() const noexcept { return m_handle; }
@@ -38,6 +32,8 @@ private:
 
     GLFWwindow* m_handle;
     ImGuiContext* m_context;
+
+    VectorUnique<PanelUnit> m_units;
 };
 
 class WindowManager final {
