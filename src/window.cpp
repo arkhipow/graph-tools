@@ -2,19 +2,15 @@
 
 #include <stdexcept>
 
-WindowUnit::WindowUnit(GLFWwindow* handle) : m_handle(handle) {
-    m_context = ImGui::CreateContext();
-}
-
-std::unique_ptr<WindowUnit> WindowUnit::Create(int width, int height, const std::string& title) {
-    GLFWwindow* handle = glfwCreateWindow(width, height, title.c_str(), nullptr, nullptr);
-    if (!handle) {
+WindowUnit::WindowUnit(int width, int height, const std::string& title) {
+    m_handle = glfwCreateWindow(width, height, title.c_str(), nullptr, nullptr);
+    if (!m_handle) {
         throw (std::runtime_error("Failed to create GLFW window"));
     }
 
     static bool isLoaded = false;
     if (!isLoaded) {
-        glfwMakeContextCurrent(handle);
+        glfwMakeContextCurrent(m_handle);
 
         if (!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress))) {
             throw (std::runtime_error("Failed to load OpenGL functions"));
@@ -22,16 +18,14 @@ std::unique_ptr<WindowUnit> WindowUnit::Create(int width, int height, const std:
         isLoaded = true;
     }
 
-    auto unit = std::unique_ptr<WindowUnit>(new WindowUnit(handle));
+    m_context = ImGui::CreateContext();
 
-    ImGui::SetCurrentContext(unit->GetContext());
+    ImGui::SetCurrentContext(m_context);
 
-    unit->SetScale();
+    SetScale();
 
-    ImGui_ImplGlfw_InitForOpenGL(handle, true);
+    ImGui_ImplGlfw_InitForOpenGL(m_handle, true);
     ImGui_ImplOpenGL3_Init("#version 130");
-
-    return unit;
 }
 
 WindowUnit::~WindowUnit() {

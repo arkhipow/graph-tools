@@ -33,7 +33,7 @@ set(GLFW_INSTALL        OFF CACHE BOOL "Generate installation target"    FORCE)
 
 add_subdirectory(${GLFW_DIR})
 
-# ImGUI
+# IMGUI
 set(IMGUI_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external/imgui)
 
 add_library(imgui STATIC

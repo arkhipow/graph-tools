@@ -5,12 +5,14 @@
 
 #include "panel.hpp"
 
+#include <vector>
+
 template <typename T>
 using VectorUnique = std::vector<std::unique_ptr<T>>;
 
-class WindowUnit final {
+class WindowUnit final : ObjectUnit {
 public:
-    [[nodiscard]] static std::unique_ptr<WindowUnit> Create(int width, int height, const std::string& title);
+    WindowUnit(int width, int height, const std::string& title);
     ~WindowUnit();
 
     void Push(std::unique_ptr<PanelUnit> unit);
@@ -23,8 +25,6 @@ public:
     WindowUnit& operator=(const WindowUnit&) = delete;
 
 private:
-    WindowUnit(GLFWwindow* handle);
-
     void NewFrame();
     void EndFrame();
 
