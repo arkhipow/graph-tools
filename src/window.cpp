@@ -2,8 +2,9 @@
 
 #include <stdexcept>
 
-WindowUnit::WindowUnit(int width, int height, const std::string& title) {
-    m_handle = glfwCreateWindow(width, height, title.c_str(), nullptr, nullptr);
+WindowUnit::WindowUnit(std::unique_ptr<IMeasureUnit> size, const std::string& title) {
+    std::pair<float, float> s = size->GetMeasure();
+    m_handle = glfwCreateWindow(s.first, s.second, title.c_str(), nullptr, nullptr);
     if (!m_handle) {
         throw (std::runtime_error("Failed to create GLFW window"));
     }
@@ -55,7 +56,11 @@ void WindowUnit::Render() {
     flags |= ImGuiWindowFlags_NoResize;
     flags |= ImGuiWindowFlags_NoMove;
 
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
 
     ImGui::Begin("GraphTools", nullptr, flags);
 
@@ -65,7 +70,7 @@ void WindowUnit::Render() {
 
     ImGui::End();
 
-    ImGui::PopStyleVar();
+    ImGui::PopStyleVar(4);
 
     EndFrame();
 }

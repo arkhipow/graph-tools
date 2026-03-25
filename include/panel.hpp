@@ -2,35 +2,45 @@
 
 #include "factory.hpp"
 
-#include <imgui.h>
-#include <imgui_impl_glfw.h>
-#include <imgui_impl_opengl3.h>
-
 #include <functional>
 #include <string>
-#include <vector>
 
-class PanelUnit : ObjectUnit {
+class IPanelUnit : public IObjectUnit {
 public:
-    PanelUnit(int width, int height, std::string title);
-    virtual ~PanelUnit() = default;
+    IPanelUnit(std::unique_ptr<IMeasureUnit> size, std::string title)
+        : m_size(std::move(size)), m_title(std::move(title)) {}
+
+    virtual ~IPanelUnit() = default;
 
     virtual void Render() = 0;
 
-    void SetPos(int x, int y) noexcept { m_x = x; m_y = y; }
-    void SetSize(int width, int height) noexcept { m_w = width; m_h = height; }
+    void SetSize(std::unique_ptr<IMeasureUnit> size) noexcept { m_size = std::move(size); }
+    void SetPos(std::unique_ptr<IMeasureUnit> pos) noexcept { m_pos = std::move(pos); }
 
 protected:
     void SetLayout() const;
 
-    int m_w, m_h;
-    int m_x, m_y;
+    std::unique_ptr<IMeasureUnit> m_size;
+    std::unique_ptr<IMeasureUnit> m_pos;
     std::string m_title;
 };
 
-class ButtonUnit final : public PanelUnit {
+class PanelUnit final : public IPanelUnit {
 public:
-    ButtonUnit(int width, int height, std::string title);
+    PanelUnit(std::unique_ptr<IMeasureUnit> size, std::string title)
+        : IPanelUnit(std::move(size), std::move(title)) {}
+
+    void Push(std::unique_ptr<IPanelUnit> unit);
+    void Render() override;
+
+private:
+    VectorUnique<IPanelUnit> m_units;
+};
+
+class ButtonUnit final : public IPanelUnit {
+public:
+    ButtonUnit(std::unique_ptr<IMeasureUnit> size, std::string title)
+        : IPanelUnit(std::move(size), std::move(title)) {}
 
     void Render() override;
 
@@ -40,13 +50,14 @@ private:
     std::function<void()> m_callback;
 };
 
-class GraphUnit final : public PanelUnit {
+class GraphUnit final : public IPanelUnit {
 public:
-    GraphUnit(int width, int height, std::string title);
+    GraphUnit(std::unique_ptr<IMeasureUnit> size, std::string title)
+        : IPanelUnit(std::move(size), std::move(title)) {}
 
     void Render() override;
 
-    void SetValues(std::vector<float>&& values) { m_values = std::move(values); }
+    void SetValues(std::vector<float>&& values) noexcept { m_values = std::move(values); }
 
 private:
     std::vector<float> m_values;

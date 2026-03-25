@@ -5,12 +5,9 @@
 
 #include "panel.hpp"
 
-template <typename T>
-using VectorUnique = std::vector<std::unique_ptr<T>>;
-
-class WindowUnit final : ObjectUnit {
+class WindowUnit final : public IObjectUnit {
 public:
-    WindowUnit(int width, int height, const std::string& title);
+    WindowUnit(std::unique_ptr<IMeasureUnit> size, const std::string& title);
     ~WindowUnit();
 
     void Push(std::unique_ptr<PanelUnit> unit);
@@ -18,9 +15,6 @@ public:
 
     GLFWwindow* GetHandle() const noexcept { return m_handle; }
     ImGuiContext* GetContext() const noexcept { return m_context; }
-
-    WindowUnit(const WindowUnit&) = delete;
-    WindowUnit& operator=(const WindowUnit&) = delete;
 
 private:
     void NewFrame();
