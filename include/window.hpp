@@ -5,8 +5,6 @@
 
 #include "panel.hpp"
 
-#include <vector>
-
 template <typename T>
 using VectorUnique = std::vector<std::unique_ptr<T>>;
 

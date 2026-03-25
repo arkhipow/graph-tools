@@ -8,7 +8,7 @@ void PanelUnit::SetLayout() const {
 }
 
 ButtonUnit::ButtonUnit(int width, int height, std::string title)
-    : PanelUnit(width, height, std::move(title)), m_callback(nullptr) {}
+    : PanelUnit(width, height, std::move(title)) {}
 
 void ButtonUnit::Render() {
     SetLayout();
@@ -17,3 +17,12 @@ void ButtonUnit::Render() {
         if (m_callback) { m_callback(); };
     }
 };
+
+GraphUnit::GraphUnit(int width, int height, std::string title)
+    : PanelUnit(width, height, std::move(title)) {}
+
+void GraphUnit::Render() {
+    SetLayout();
+
+    ImGui::PlotLines(m_title.c_str(), m_values.data(), m_values.size(), 0, nullptr, FLT_MAX, FLT_MAX, ImVec2(m_w, m_h));
+}

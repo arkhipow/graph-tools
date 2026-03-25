@@ -8,6 +8,7 @@
 
 #include <functional>
 #include <string>
+#include <vector>
 
 class PanelUnit : ObjectUnit {
 public:
@@ -37,4 +38,16 @@ public:
 
 private:
     std::function<void()> m_callback;
+};
+
+class GraphUnit final : public PanelUnit {
+public:
+    GraphUnit(int width, int height, std::string title);
+
+    void Render() override;
+
+    void SetValues(std::vector<float>&& values) { m_values = std::move(values); }
+
+private:
+    std::vector<float> m_values;
 };
