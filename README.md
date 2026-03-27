@@ -7,33 +7,37 @@ using namespace FactoryUnit;
 
 int main() {
     auto manager = WindowManager::Create();
-    auto window = Create<WindowUnit>(Pixels(1280, 720), "Graph Tools");
+    auto window = Create<WindowUnit>(Pixels(2200, 1300), "GraphTools");
 
-    auto toolbar = Create<PanelUnit>(Percent(30, 100), "Toolbar");
+    auto toolbar = Create<PanelUnit>(Percent(25, 100), "Toolbar");
+    toolbar->SetColor(0.08f, 0.10f, 0.13f, 1.00f);
     for (int i = 1; i <= 5; ++i) {
-        toolbar->Push(Create<ButtonUnit>(Percent(100, 20), "Button " + std::to_string(i)));
+        auto button = Create<ButtonUnit>(Percent(90, 4), "Button " + std::to_string(i));
+        button->SetPos(Percent(5, 5 * (i - 1) + 2));
+        toolbar->Push(std::move(button));
     }
 
     std::vector<float> v1, v2;
-    for (float i = -10.0f; i <= 10.0f; i += 0.1f) {
-        v1.push_back(std::abs(i) < 0.001f ? 2.0f : std::sin(2 * i) / i);
-        v2.push_back(std::exp(-0.1f * std::abs(i)) * std::cos(2.0f * i));
+    for (float i = - 10; i <= 10; i += 0.1) {
+        v1.push_back(std::exp(-i) * std::sin(5 * i));
+        v2.push_back(std::exp(-i) * (5 * std::cos(5 * i) - std::sin(5 * i)));
     }
 
-    auto panel = Create<PanelUnit>(Percent(70, 100), "Panel");
-    panel->SetPos(Percent(30, 0));
+    auto graphs = Create<PanelUnit>(Percent(75, 100), "Graphs");
+    graphs->SetPos(Percent(25, 0));
 
-    auto g1 = Create<GraphUnit>(Percent(100, 50), "Graph 1");
-    auto g2 = Create<GraphUnit>(Percent(100, 50), "Graph 2");
+    auto function = Create<GraphUnit>(Percent(86, 40), "Function");
+    function->SetPos(Percent(2, 2));
+    function->SetValues(std::move(v1));
+    graphs->Push(std::move(function));
 
-    g1->SetValues(std::move(v1));
-    g2->SetValues(std::move(v2));
-    g2->SetPos(Percent(0, 50));
+    auto derivative = Create<GraphUnit>(Percent(86, 40), "Derivative");
+    derivative->SetPos(Percent(2, 44));
+    derivative->SetValues(std::move(v2));
+    graphs->Push(std::move(derivative));
 
-    panel->Push(std::move(g1));
-    panel->Push(std::move(g2));
     window->Push(std::move(toolbar));
-    window->Push(std::move(panel));
+    window->Push(std::move(graphs));
 
     manager->Push(std::move(window));
     manager->Run();
