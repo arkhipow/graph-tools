@@ -55,6 +55,7 @@ target_include_directories(imgui PUBLIC
 set(GRAPH_TOOLS_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
 add_executable(graph_tools
+    ${GRAPH_TOOLS_DIR}/src/style.cpp
     ${GRAPH_TOOLS_DIR}/src/utils.cpp
     ${GRAPH_TOOLS_DIR}/src/panel.cpp
     ${GRAPH_TOOLS_DIR}/src/window.cpp

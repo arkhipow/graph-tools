@@ -3,7 +3,8 @@
 void IPanelUnit::SetLayout() const {
     if (m_pos) {
         std::pair<float, float> pos = m_pos->GetMeasure();
-        ImGui::SetCursorPos(ImVec2(pos.first, pos.second));
+        ImVec2 pad = ImGui::GetStyle().WindowPadding;
+        ImGui::SetCursorPos(ImVec2(pos.first + pad.x, pos.second + pad.y));
     }
 }
 
@@ -19,9 +20,18 @@ void PanelUnit::Render() {
         ImGui::SetCursorPos(ImVec2(x, y));
     }
 
+    if (m_custom) {
+        ImGui::PushStyleColor(ImGuiCol_ChildBg, m_color);
+    }
+
+    auto [paddingX, paddingY] = m_padding->GetMeasure();
+    auto [spacingX, spacingY] = m_spacing->GetMeasure();
+
+    ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 0.0f);
     ImGui::PushStyleVar(ImGuiStyleVar_ChildBorderSize, 0.0f);
 
-    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(paddingX, paddingY));
+    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(spacingX, spacingY));
 
     ImGui::BeginChild(m_title.c_str(), ImVec2(w, h), false);
 
@@ -31,7 +41,11 @@ void PanelUnit::Render() {
 
     ImGui::EndChild();
 
-    ImGui::PopStyleVar(2);
+    ImGui::PopStyleVar(4);
+
+    if (m_custom) {
+        ImGui::PopStyleColor();
+    }
 }
 
 void ButtonUnit::Render() {

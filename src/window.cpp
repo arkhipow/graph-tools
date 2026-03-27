@@ -1,4 +1,5 @@
 #include "window.hpp"
+#include "style.hpp"
 
 #include <stdexcept>
 
@@ -23,6 +24,7 @@ WindowUnit::WindowUnit(std::unique_ptr<IMeasureUnit> size, const std::string& ti
 
     ImGui::SetCurrentContext(m_context);
 
+    SetStyle();
     SetScale();
 
     ImGui_ImplGlfw_InitForOpenGL(m_handle, true);
