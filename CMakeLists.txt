@@ -51,6 +51,22 @@ target_include_directories(imgui PUBLIC
     ${GLFW_DIR}/include
 )
 
+# IMPlot
+set(IMPLOT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external/implot)
+
+add_library(implot STATIC
+    ${IMPLOT_DIR}/implot.cpp
+    ${IMPLOT_DIR}/implot_items.cpp
+)
+
+target_include_directories(implot PUBLIC
+    ${IMPLOT_DIR}
+)
+
+target_link_libraries(implot PUBLIC
+    imgui
+)
+
 # GraphTools
 set(GRAPH_TOOLS_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
@@ -71,4 +87,5 @@ target_link_libraries(graph_tools PRIVATE
     glad
     glfw
     imgui
+    implot
 )

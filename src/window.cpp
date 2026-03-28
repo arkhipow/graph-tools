@@ -20,9 +20,10 @@ WindowUnit::WindowUnit(std::unique_ptr<IMeasureUnit> size, const std::string& ti
         isLoaded = true;
     }
 
-    m_context = ImGui::CreateContext();
+    m_gui = ImGui::CreateContext();
+    m_plot = ImPlot::CreateContext();
 
-    ImGui::SetCurrentContext(m_context);
+    ImGui::SetCurrentContext(m_gui);
 
     SetStyle();
     SetScale();
@@ -33,12 +34,13 @@ WindowUnit::WindowUnit(std::unique_ptr<IMeasureUnit> size, const std::string& ti
 
 WindowUnit::~WindowUnit() {
     glfwMakeContextCurrent(m_handle);
-    ImGui::SetCurrentContext(m_context);
+    ImGui::SetCurrentContext(m_gui);
 
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
 
-    ImGui::DestroyContext(m_context);
+    ImPlot::DestroyContext(m_plot);
+    ImGui::DestroyContext(m_gui);
     glfwDestroyWindow(m_handle);
 }
 

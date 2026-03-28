@@ -61,5 +61,8 @@ void GraphUnit::Render() {
     SetLayout();
 
     std::pair<float, float> size = m_size->GetMeasure();
-    ImGui::PlotLines(m_title.c_str(), m_values.data(), m_values.size(), 0, nullptr, FLT_MAX, FLT_MAX, ImVec2(size.first, size.second));
+
+    ImPlot::BeginPlot((m_title + " Plot").c_str(), ImVec2(size.first, size.second));
+    ImPlot::PlotLine(m_title.c_str(), m_values.data(), m_values.size());
+    ImPlot::EndPlot();
 }

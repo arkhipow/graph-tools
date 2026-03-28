@@ -16,19 +16,19 @@ int main() {
 
     std::vector<float> v1, v2;
     for (float i = - 10; i <= 10; i += 0.1) {
-        v1.push_back(std::exp(-i) * std::sin(5 * i));
-        v2.push_back(std::exp(-i) * (5 * std::cos(5 * i) - std::sin(5 * i)));
+        v1.push_back(std::exp(-0.2f * std::abs(i)) * std::sin(3.0f * i));
+        v2.push_back(std::exp(-0.2f * std::abs(i)) * (3.0f * std::cos(3.0f * i) - 0.2f * (i > 0 ? 1.0f : -1.0f) * std::sin(3.0f * i)));
     }
 
     auto graphs = Create<PanelUnit>(Percent(75, 100), "Graphs");
     graphs->SetPos(Percent(25, 0));
 
-    auto function = Create<GraphUnit>(Percent(86, 40), "Function");
+    auto function = Create<GraphUnit>(Percent(96, 40), "Function");
     function->SetPos(Percent(2, 2));
     function->SetValues(std::move(v1));
     graphs->Push(std::move(function));
 
-    auto derivative = Create<GraphUnit>(Percent(86, 40), "Derivative");
+    auto derivative = Create<GraphUnit>(Percent(96, 40), "Derivative");
     derivative->SetPos(Percent(2, 44));
     derivative->SetValues(std::move(v2));
     graphs->Push(std::move(derivative));

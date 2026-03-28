@@ -2,6 +2,8 @@
 
 #include "factory.hpp"
 
+#include <implot.h>
+
 #include <functional>
 #include <string>
 

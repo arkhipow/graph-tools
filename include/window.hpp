@@ -14,7 +14,7 @@ public:
     void Render();
 
     GLFWwindow* GetHandle() const noexcept { return m_handle; }
-    ImGuiContext* GetContext() const noexcept { return m_context; }
+    ImGuiContext* GetContext() const noexcept { return m_gui; }
 
 private:
     void NewFrame();
@@ -23,7 +23,9 @@ private:
     void SetScale();
 
     GLFWwindow* m_handle;
-    ImGuiContext* m_context;
+
+    ImGuiContext* m_gui;
+    ImPlotContext* m_plot;
 
     VectorUnique<PanelUnit> m_units;
 };
