@@ -6,6 +6,7 @@
 
 #include <functional>
 #include <string>
+#include <unordered_map>
 
 class IPanelUnit : public IObjectUnit {
 public:
@@ -78,4 +79,21 @@ public:
 
 private:
     std::vector<float> m_values;
+};
+
+template <typename T>
+using GroupUnit = std::unordered_map<std::string, std::vector<std::unique_ptr<T>>>;
+
+class DropListUnit final : public IPanelUnit {
+public:
+    DropListUnit(std::unique_ptr<IMeasureUnit> size, std::string title)
+        : IPanelUnit(std::move(size), std::move(title)), m_current(0) {}
+
+    void Render() override;
+
+    void Push(std::string title, std::unique_ptr<PanelUnit> unit);
+
+private:
+    int m_current;
+    GroupUnit<IPanelUnit> m_units;
 };
